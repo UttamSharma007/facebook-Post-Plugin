@@ -10,7 +10,6 @@ Author URI: http://www.example.com
 ?>
 <?php
 require_once __DIR__ . '/lib/Facebook/autoload.php';
-
 	use Facebook\FacebookSession;
 	use Facebook\FacebookRedirectLoginHelper;
 	use Facebook\FacebookRequest;
@@ -24,7 +23,6 @@ require_once __DIR__ . '/lib/Facebook/autoload.php';
 	use Facebook\FacebookHttpable;
 	use Facebook\FacebookCurlHttpClient;
 	use Facebook\FacebookCurl;
-
 //Adding plugin on dashboard
 add_action('admin_menu', 'FacebookPlugin_admin_actions');
 function FacebookPlugin_admin_actions() {
@@ -47,7 +45,6 @@ function xyz_fbp_add_admin_scripts()
 add_action("init","xyz_fbp_add_admin_scripts");
 //register our settings
 function register_my_cool_plugin_settings() {
-	
 	register_setting( 'my-cool-plugin-settings-group', 'fpp_app_id' );
 	register_setting( 'my-cool-plugin-settings-group', 'fpp_app_secret' );
 	register_setting( 'my-cool-plugin-settings-group', 'fpp_group_id' );
@@ -93,8 +90,7 @@ function FacebookPluginPost_plugin_settings(){
         	&nbsp;
         	<a href="https://developers.facebook.com/docs/apps/register" target="_blank">For create Facebook app, Click here</a>
         	</td>
-        </tr>
-         
+        </tr>   
         <tr valign="top">
         	<th scope="row">Application Secret</th>
         	<td><input type="text" name="fpp_app_secret" id="fpp_app_secret" required />
@@ -104,26 +100,6 @@ function FacebookPluginPost_plugin_settings(){
         	<th scope="row">Group ID</th>
         	<td><input type="text" name="fpp_group_id" required/>&nbsp;
         	<a href="https://www.slickremix.com/how-to-get-your-facebook-group-id/" target="_blank">Find your Facebook Group Id, Click here</a>
-        	</td>
-        </tr>
-    </table>
-    <?php submit_button(); ?>
-</form>
-<!--Add Post to the Group-->
-<h4>Add post to facebook group</h4>
-<form method="post" action="options.php" class="container">
-    <?php settings_fields( 'my-cool-plugin-settings-group' ); ?>
-    <?php do_settings_sections( 'my-cool-plugin-settings-group' ); ?>
-    <table class="form-table">
-        <tr valign="top">
-        	<th scope="row">Application ID</th>
-        	<td><input type="text" name="app_id" value="<?php //echo esc_attr( get_option('app_id') ); ?>" />&nbsp;
-        	<a href="https://developers.facebook.com/docs/apps/register" target="_blank">For create Facebook app, Click here</a>
-        	</td>
-        </tr> 
-        <tr valign="top">
-        	<th scope="row">Application Secret</th>
-        	<td><input type="text" name="app_secret" value="<?php //echo esc_attr( get_option('app_secret') ); ?>" />
         	</td>
         </tr>
     </table>
@@ -172,7 +148,6 @@ function FacebookPluginPost_testimonial_form() {
 	 	if(isset($sess)){
 	 		//store the token in the php session
 	 		$_SESSION['fb_token'] = $sess->getToken();
-	 		//update_option('current_session', $_SESSION['fb_token']);
 	 		//create request object,execute and capture response
 	 		$request = new FacebookRequest($sess,'GET','/me?fields=id,name,email');
 			// from response get graph object
@@ -193,7 +168,6 @@ function FacebookPluginPost_testimonial_form() {
 	    <a href="<?php echo $login_url; ?>"><button class="btn btn-primary">Login with facebook</button>
 	    </a>
     	<?php }else {
-
 				$data = array($id);
 				add_option('facebook_users', NULL);
 				$storedata =  get_option( 'facebook_users' );
