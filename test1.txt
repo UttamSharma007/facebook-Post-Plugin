@@ -1,5 +1,4 @@
 <?php
- session_start();
 /*
 Plugin Name: FacebookPluginPost
 Plugin URI: http://www.example.com
@@ -8,6 +7,7 @@ Author: Uttam Sharma
 Version: 1.0
 Author URI: http://www.example.com
 */
+session_start();
 ?>
 <?php
 require_once __DIR__ . '/lib/Facebook/autoload.php';
@@ -42,14 +42,13 @@ add_action( 'admin_init', 'register_my_cool_plugin_settings' );
 //include css file
 function xyz_fbp_add_admin_scripts()
 {
-	//wp_register_script( 'your_css_and_js', plugins_url('FacebookPluginPost/Assets/js/validate.js',__FILE__ ));
-	//wp_enqueue_script('your_css_and_js');
+    // This registers your script with a name so you can call it to enqueue it
+    wp_enqueue_script( 'custom-script' );
 
 	wp_register_style('xyz_fbp_style', plugins_url('FacebookPluginPost/Assets/css/style.css'));
 	wp_enqueue_style('xyz_fbp_style');
 }
-
-add_action("admin_enqueue_scripts","xyz_fbp_add_admin_scripts");
+add_action("init","xyz_fbp_add_admin_scripts");
 //register our settings
 function register_my_cool_plugin_settings() {
 	
@@ -57,13 +56,17 @@ function register_my_cool_plugin_settings() {
 	register_setting( 'my-cool-plugin-settings-group', 'fpp_app_secret' );
 	register_setting( 'my-cool-plugin-settings-group', 'fpp_group_id' );
 }
+
+
 //Backend design admin area
 function FacebookPluginPost_plugin_settings(){
-	?>
-	<div class="container2">
+?>
+<div class="container2">
 <img src="http://localhost/projects/wp-content/plugins/FacebookPluginPost/Assets/images/fpp-icon.png" class="iconDetails"><h1>Facebook Plugin Post</h1></div>
+
 <div class="wrap">
 <!--Include Shortcode table-->
+<h1>Facebook Plugin Post</h1>
 <h4>Shortcode for Facebook Plugin Post</h4>
 		<table class="widefat">
 			<thead>
@@ -121,13 +124,13 @@ function FacebookPluginPost_plugin_settings(){
     <table class="form-table">
         <tr valign="top">
         	<th scope="row">Application ID</th>
-        	<td><input type="text" name="app_id" />&nbsp;
+        	<td><input type="text" name="app_id" value="<?php //echo esc_attr( get_option('app_id') ); ?>" />&nbsp;
         	<a href="https://developers.facebook.com/docs/apps/register" target="_blank">For create Facebook app, Click here</a>
         	</td>
         </tr> 
         <tr valign="top">
         	<th scope="row">Application Secret</th>
-        	<td><input type="text" name="app_secret" />
+        	<td><input type="text" name="app_secret" value="<?php //echo esc_attr( get_option('app_secret') ); ?>" />
         	</td>
         </tr>
     </table>
@@ -137,6 +140,7 @@ function FacebookPluginPost_plugin_settings(){
 <?php
 }
 function FacebookPluginPost_testimonial_form() {
+
 	if(!empty (get_option('fpp_app_id') ) )
 	{
 		$app_id = esc_attr( get_option('fpp_app_id') );
@@ -145,36 +149,52 @@ function FacebookPluginPost_testimonial_form() {
 	{
 		$app_secret = esc_attr( get_option('fpp_app_secret') );
 	}
-		$redirect_url = get_permalink();
-
+	$redirect_url = get_permalink();
+	
+	
 	//Initialize application, create helper object and get fb sess
 	 $loggedin = false;
 	 FacebookSession::setDefaultApplication($app_id,$app_secret);
 	 $helper = new FacebookRedirectLoginHelper($redirect_url);
 	 $sess = $helper->getSessionFromRedirect();
-
 	 //check if facebook session exists
-	 $wwwa = get_option('wwwa');
-	 if($wwwa && !isset($_GET['logout'])){
-		$sess = new FacebookSession($wwwa);
+	/* if(isset($_GET['logout']))
+	    		{
+	    			update_option('current_session', NULL);
+	    		}
+	 $current_session = get_option('current_session');
+	if($current_session!=NULL && !isset($_GET['logout'])){
+		//echo "string";
+		$sess = new FacebookSession($current_session);
+		try{
+			$sess->Validate($app_id,$app_secret);
+		}catch(FacebookAuthorizationException $e){
+			print_r($e);
+		}
+	}*/
+	echo "string";
+echo $current_sess;
+	if(isset($current_sess)){
+		echo "stringkvhjkhjllh";
+		$sess = new FacebookSession($current_sess);
 		try{
 			$sess->Validate($app_id,$app_secret);
 		}catch(FacebookAuthorizationException $e){
 			print_r($e);
 		}
 	}
-	
+
 	$loggedin = false;
-		
 	//get email as well with user permission
 	$login_url = $helper->getLoginUrl(array('scope' => 'email','publish_actions','user_managed_groups'));
-	//if fb sess exists echo name 
+	//4. if fb sess exists echo name 
 	 	if(isset($sess)){
 	 		//store the token in the php session
+	 		$current_sess= NULL;
 	 		$_SESSION['fb_token']=$sess->getToken();
-	 		//echo $_SESSION['fb_token'];
-	 		add_option('wwwa',$_SESSION['fb_token'] );
-	 		//var_dump( get_option( 'wwwa ') );
+	 		$current_sess = $_SESSION['fb_token'];
+	 		echo $current_sess;
+	 		//update_option('current_session', $_SESSION['fb_token']);
 	 		//create request object,execute and capture response
 	 		$request = new FacebookRequest($sess,'GET','/me?fields=id,name,email');
 			// from response get graph object
@@ -188,28 +208,39 @@ function FacebookPluginPost_testimonial_form() {
 			$loggedin  = true;
 			//$headers = 'From: Uttam sharma <uttams@bsf.io>';
 			//mail( $email, 'Successfully Login', 'Thank you for login.', $headers );
+			/*$postRequest = new FacebookRequest($sess, 'POST', '/152293635238142/feed', array('message' => 'My first post using my facebook app.'));
+			$postResponse = $postRequest->execute();
+			$posting = $postResponse->getGraphObject();
+			echo $posting->getProperty('id');*/
 	}
 ?>
 		<?php if(!$loggedin){?>
-	    
 	    <p>Welcome, Please login to your facebook account.</p>
 	    <a href="<?php echo $login_url; ?>"><button class="btn btn-primary">Login with facebook</button>
 	    </a>
     	<?php }else {
-
-				$data = array($id=> $email);
-				add_option('facebook_users', $data);
+    		//echo "this is id";
+    		//echo $id;
+    			//delete_option('facebook_users');
+				$data = array($email);
+				//var_dump($data);
+				add_option('facebook_users', NULL);
 				$storedata =  get_option( 'facebook_users' );
-				if(array_key_exists($id, $storedata))
+				//echo "this is storedata";
+				var_dump($storedata);
+				if(in_array($email, $storedata))
 				{
 					echo 'already exits';
 				}
 				else {
-						$final=array_merge($storedata,$data);
-				    	update_option('facebook_users', $final);
-				    	echo 'successfully registration!!';
+					echo "string";
+					//var_dump($data);
+					$final = array_merge((array)$storedata,(array)$data);
+					//echo "stringfdhgh";
+					//var_dump($final);
+				    update_option('facebook_users', $final);
+				    echo 'successfully registration!!';
 				}
-
 				// get list of groups which user has joined
 					/*$getGroups = (new FacebookRequest(
 						$sess,
@@ -220,11 +251,14 @@ function FacebookPluginPost_testimonial_form() {
 						echo $key->id;
 						echo "<br>";
 					}*/
+
+			//code for post content on facebook page
+					
 			if(isset($_POST['fb_submit']))
 			{
 				$group_id = get_option('fpp_group_id');
 			$content = $_POST['content'];
-			$postRequest = new FacebookRequest($sess, 'POST', '/'.$content.'/feed', array('message' => $content));
+			$postRequest = new FacebookRequest($sess, 'POST', '/'.$group_id.'/feed', array('message' => $content));
 			$postResponse = $postRequest->execute();
 			$posting = $postResponse->getGraphObject();
 			if($posting->getProperty('id'))
@@ -235,12 +269,44 @@ function FacebookPluginPost_testimonial_form() {
 				echo "error occur!!";
 			}
 		}
-				
+		if(isset($_POST['test_submit']))
+			{
+				$request = new FacebookRequest(
+				  $sess,
+				  'GET',
+				  '/'.$app_id.'/roles'
+				);
+				$response = $request->execute();
+				$graphObject = $response->getGraphObject();
+				if($graphObject)
+				{
+					echo "success";
+				}
+				else
+				{
+					echo "fail";
+				}
+				/*echo "string";
+				$request = new FacebookRequest(
+				  $sess,
+				  'POST',
+				  '/'.$group_id.'/members',
+				  array (
+    'member' => $id,
+  )
+				);
+				$response = $request->execute();
+				$graphObject = $response->getGraphObject();
+				print_r($graphObject);*/
+			}
 		?>
 		<form action="#" method="POST">
 			<label>Your Message</label>
 			<textarea name="content"></textarea>
 			<input type="submit" name="fb_submit" value="Post on Facebook">
+		</form>
+		<form action="#" method="POST">
+			<input type="submit" name="test_submit" value="test">
 		</form>
     	<h1>Successfully login!</h1>
     	<img src="<?php echo $image; ?>" alt="<?php echo $name; ?>" class="img-thumbnail">
@@ -248,19 +314,19 @@ function FacebookPluginPost_testimonial_form() {
 	    <p>you have successfully logged in via facebook :) and your email is <br/>
 	    	<code><?php echo $email ; ?></code>
 	    </p><br>
-	    	<a href='<?php $logout = 'http://localhost/projects/post-on-facebook/?logout=1'; 
-	$log =  $helper->getLogoutUrl($sess,$logout);  session_destroy(); unset($sess); 
-	echo $log; ?>'>
-
-	    		<button  class="btn btn-primary">Logout</button>
+	    	<?php $logout = get_permalink(); ?>
+	    	<a href='<?php $logout .= '?logout=1'; 
+	$log =  $helper->getLogoutUrl($sess,$logout); unset($sess); unset($_SESSION['fb_token']); echo $log; ?>'>
+	    	<button class="btn btn-primary">Logout</button>
 	    	</a>	
 	    	<?php
-	    	if($_GET['logout']) {
-	    		delete_option('wwwa');
-	    		unset($sess);
-	    		session_destroy();
-	    	}
-	}
-}
+	    		if(isset($_GET['logout']))
+	    		{
+	    			update_option('current_session', NULL);
+	    			//delete_option('facebook_users');
+	    		}
+			}
+		}
+
 add_shortcode('Facebook-Plugin-Post-1', 'FacebookPluginPost_testimonial_form');
 ?>

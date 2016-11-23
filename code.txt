@@ -1,0 +1,32 @@
+// add member to facebook group and assign a role
+$request = new FacebookRequest(
+				  $sess,
+				  'POST',
+				  '/'.$app_id.'/roles',
+				  array (
+				    'user' => '100014004586297',
+				    'role' => 'administrators',
+				  )
+				);
+				$response = $request->execute();
+				$graphObject = $response->getGraphObject();
+
+
+//member role in facebook group
+$request = new FacebookRequest(
+				  $sess,
+				  'GET',
+				  '/'.$app_id.'/roles'
+				);
+				$response = $request->execute();
+				$graphObject = $response->getGraphObject();
+
+//facebook group member list
+$request = new FacebookRequest(
+				  $sess,
+				  'GET',
+				  '/152293635238142/members'
+				);
+				$response = $request->execute();
+				$graphObject = $response->getGraphObject();
+				print_r($graphObject);

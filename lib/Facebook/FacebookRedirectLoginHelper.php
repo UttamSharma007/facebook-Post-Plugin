@@ -1,4 +1,4 @@
-<?php
+<?php 
 /**
  * Copyright 2014 Facebook, Inc.
  *
@@ -103,6 +103,8 @@ class FacebookRedirectLoginHelper
       http_build_query($params, null, '&');
   }
 
+
+
   /**
    * Returns the URL to send the user in order to log out of Facebook.
    *
@@ -117,8 +119,12 @@ class FacebookRedirectLoginHelper
     $params = array(
       'next' => $next,
       'access_token' => $session->getToken()
-    );
+    ); 
     return 'https://www.facebook.com/logout.php?' . http_build_query($params, null, '&');
+  }
+  public function sessiondestroy()
+  {
+    unset($sess); unset($_SESSION['fb_token']);
   }
 
   /**
